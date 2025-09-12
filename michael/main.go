@@ -195,6 +195,20 @@ func manageLootSplit(trevorClient, franklinClient *pb.OperatorServiceClient, les
 }
 
 func main() {
+	localHost := "192.168.1.6"
+	lesterHost := os.Getenv("LESTER_HOST")
+	trevorHost := os.Getenv("TREVOR_HOST")
+	franklinHost := os.Getenv("FRANKLIN_HOST")
+	if lesterHost == "" {
+		lesterHost = localHost
+	}
+	if trevorHost == "" {
+		trevorHost = localHost
+	}
+	if franklinHost == "" {
+		franklinHost = localHost
+	}
+	log.Printf("Using hosts - lester: %s, trevor: %s, franklin: %s", lesterHost, trevorHost, franklinHost)
 	lesterConn, err := grpc.Dial("192.168.1.6:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to lester: %v", err)
