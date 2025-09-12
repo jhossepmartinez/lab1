@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option go_package = "/proto";
+
+package heist;
+
+message Empty {}
+message HeistOffer {
+  int32 loot = 1;
+  int32 franklin_success = 2;
+  int32 trevor_success = 3;
+  int32 police_risk = 4;
+}
+message Decision {
+  bool accepted = 1;
+}
+message BasicMessage {
+  string message = 1;
+}
+message PhaseResult {
+  bool success = 1;
+}
+message PhaseStatus {
+  enum Status {
+    IN_PROGESS = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+    AWAITING_ORDERS = 3;
+  }
+  Status status = 1;
+  string message = 2;
+}
+message DistractionDetails {
+  int32 turns_needed = 1;
+}
+message NotificationCommand {
+  enum Command {
+    START = 0;
+    STOP = 1;
+  }
+  Command command = 1;
+  int32 frequency = 2;
+}
+message HitDetails {
+  int32 turns_needed = 1;
+}
+
+service LesterService {
+  rpc ProposeHeistOffer(Empty) returns (HeistOffer);
+  rpc DecideOnOffer(Decision) returns (Empty);
+  rpc ManageStarsNotifications(NotificationCommand) returns (Empty);
+}
+
+service OperatorService {
+  rpc StartDistraction(DistractionDetails) returns (Empty);
+  rpc CheckDistractionStatus(Empty) returns (PhaseStatus);
+  rpc StartHit(HitDetails) returns (Empty);
+}
