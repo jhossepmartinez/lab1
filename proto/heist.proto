@@ -29,6 +29,8 @@ message PhaseStatus {
   }
   Status status = 1;
   string message = 2;
+  int32 extraMoney = 3;
+  int32 totalLoot = 4;
 }
 message DistractionDetails {
   int32 turns_needed = 1;
@@ -43,16 +45,33 @@ message NotificationCommand {
 }
 message HitDetails {
   int32 turns_needed = 1;
+  int32 loot = 2;
+}
+message LootDetails {
+  int32 loot = 1;
+  int32 extra_money = 2;
+}
+message CutDetails {
+  int32 loot = 1;
+  int32 extra_moeny = 2;
+  int32 received_cut = 3;
+}
+message Ack {
+  bool acknowledged = 1;
+  string message = 2;
 }
 
 service LesterService {
   rpc ProposeHeistOffer(Empty) returns (HeistOffer);
   rpc DecideOnOffer(Decision) returns (Empty);
   rpc ManageStarsNotifications(NotificationCommand) returns (Empty);
+  rpc ConfirmCut(CutDetails) returns (Ack);
 }
 
 service OperatorService {
   rpc StartDistraction(DistractionDetails) returns (Empty);
   rpc CheckDistractionStatus(Empty) returns (PhaseStatus);
   rpc StartHit(HitDetails) returns (Empty);
+  rpc RetrieveLoot(Empty) returns (LootDetails);
+  rpc ConfirmCut(CutDetails) returns (Ack);
 }

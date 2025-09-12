@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	// "math/rand"
 	// "net"
+	"bufio"
+	"fmt"
 	"time"
 
 	"google.golang.org/grpc"
@@ -67,7 +70,7 @@ func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offe
 		}
 	}
 }
-func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) *pb.PhaseStatus {
+func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) (*pb.PhaseStatus, string) {
 	var oc *pb.OperatorServiceClient
 	oc = trevorClient
 	var ocName string = "Trevor"
@@ -78,7 +81,7 @@ func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.He
 		turns_needed = offer.FranklinSuccess
 	}
 	log.Printf("Running the HIT with %s", ocName)
-	_, err := (*oc).StartHit(context.Background(), &pb.HitDetails{TurnsNeeded: 200 - turns_needed})
+	_, err := (*oc).StartHit(context.Background(), &pb.HitDetails{TurnsNeeded: 200 - turns_needed, Loot: offer.Loot})
 	if err != nil {
 		log.Fatal("Could not start hit: &v", err)
 	}
@@ -90,10 +93,105 @@ func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.He
 		}
 		if status.Status != pb.PhaseStatus_IN_PROGESS {
 			log.Printf("Hit finished with status: %v", status.Status)
-			return status
+			return status, ocName
 		}
 	}
+}
+func createReport(loot, extraMoney, totalLoot, franklinCut, trevorCut, lesterCut, remainder int32,
+	franklinResp, trevorResp, lesterResp string) {
+	file, err := os.Create("Reporte.txt")
+	if err != nil {
+		log.Fatal("Could not create report file: ", err)
+	}
+	defer file.Close()
 
+	// Format numbers with commas for thousands
+	formatNumber := func(num int32) string {
+		return fmt.Sprintf("$%d,%03d", num/1000, num%1000)
+	}
+
+	// Write the report
+	writer := bufio.NewWriter(file)
+
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+	writer.WriteString("== REPORTE FINAL DE LA MISION ==\n")
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+	writer.WriteString("Mision : Asalto al Banco # 7128\n")
+	writer.WriteString("Resultado Global : MISION COMPLETADA CON EXITO !\n")
+	writer.WriteString("--- REPARTO DEL BOTIN ---\n")
+	writer.WriteString(fmt.Sprintf("Botin Base : %s\n", formatNumber(loot)))
+	writer.WriteString(fmt.Sprintf("Botin Extra ( Habilidad de Chop ): %s\n", formatNumber(extraMoney)))
+	writer.WriteString(fmt.Sprintf("Botin Total : %s\n", formatNumber(totalLoot)))
+	writer.WriteString("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
+	writer.WriteString(fmt.Sprintf("Pago a Franklin : %s\n", formatNumber(franklinCut)))
+	writer.WriteString(fmt.Sprintf("Respuesta de Franklin : \"%s\"\n", franklinResp))
+	writer.WriteString(fmt.Sprintf("Pago a Trevor : %s\n", formatNumber(trevorCut)))
+	writer.WriteString(fmt.Sprintf("Respuesta de Trevor : \"%s\"\n", trevorResp))
+	writer.WriteString(fmt.Sprintf("Pago a Lester : %s ( reparto ) + %s ( resto )\n", formatNumber(lesterCut-remainder), formatNumber(remainder)))
+	writer.WriteString(fmt.Sprintf("Respuesta de Lester : \"%s\"\n", lesterResp))
+	writer.WriteString("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
+	writer.WriteString(fmt.Sprintf("Saldo Final de la Operacion : %s\n", formatNumber(totalLoot)))
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+
+	writer.Flush()
+
+	log.Println("Reporte.txt creado exitosamente")
+}
+func manageLootSplit(trevorClient, franklinClient *pb.OperatorServiceClient, lesterClient *pb.LesterServiceClient, ocName string) (int32, int32) {
+	var oc *pb.OperatorServiceClient
+	oc = trevorClient
+	if ocName == "Franklin" {
+		oc = franklinClient
+	} else {
+		oc = trevorClient
+	}
+	lootDetails, err := (*oc).RetrieveLoot(context.Background(), &pb.Empty{})
+	if err != nil {
+		log.Fatal("Could not retrieve loot: &v", err)
+	}
+	loot := lootDetails.Loot
+	extraMoney := lootDetails.ExtraMoney
+	totalLoot := loot + extraMoney
+
+	split := totalLoot / 4
+	remainder := totalLoot % 4
+
+	lesterCut := split + remainder
+	franklinCut := split
+	trevorCut := split
+
+	ackTrevor, err := (*trevorClient).ConfirmCut(context.Background(), &pb.CutDetails{
+		Loot:        loot,
+		ExtraMoeny:  extraMoney,
+		ReceivedCut: trevorCut,
+	})
+	if err != nil {
+		log.Fatal("Could not retrieve loot: &v", err)
+	}
+	log.Printf("Trevor's response: %s", ackTrevor.Message)
+
+	ackFranklin, err := (*franklinClient).ConfirmCut(context.Background(), &pb.CutDetails{
+		Loot:        loot,
+		ExtraMoeny:  extraMoney,
+		ReceivedCut: franklinCut,
+	})
+	if err != nil {
+		log.Fatal("Could not retrieve loot: &v", err)
+	}
+	log.Printf("Franklin's response: %s", ackFranklin.Message)
+
+	ackLester, err := (*lesterClient).ConfirmCut(context.Background(), &pb.CutDetails{
+		Loot:        loot,
+		ExtraMoeny:  extraMoney,
+		ReceivedCut: lesterCut,
+	})
+	if err != nil {
+		log.Fatal("Could not retrieve loot: &v", err)
+	}
+	log.Printf("Lester's response: %s", ackLester.Message)
+	createReport(loot, extraMoney, totalLoot, franklinCut, trevorCut, lesterCut, remainder, ackFranklin.Message, ackTrevor.Message, ackLester.Message)
+
+	return lootDetails.Loot, lootDetails.ExtraMoney
 }
 
 func main() {
@@ -136,7 +234,7 @@ func main() {
 		Command:   pb.NotificationCommand_START,
 		Frequency: 100 - offer.PoliceRisk,
 	})
-	hitStatus := runHit(&trevorClient, &franklinClient, offer)
+	hitStatus, ocName := runHit(&trevorClient, &franklinClient, offer)
 	if hitStatus.Status != pb.PhaseStatus_SUCCESS {
 		log.Printf("Coordinating: Phase 3, hit failed, %s", hitStatus.Message)
 		lesterClient.ManageStarsNotifications(context.Background(), &pb.NotificationCommand{
@@ -147,7 +245,11 @@ func main() {
 	lesterClient.ManageStarsNotifications(context.Background(), &pb.NotificationCommand{
 		Command: pb.NotificationCommand_STOP,
 	})
+	log.Printf("Hit completed, totalLoot: $%d, extraMoney: $%d", hitStatus.TotalLoot, hitStatus.ExtraMoney)
 	log.Println("Coordinating: Phase 3, the hit, success")
+	log.Println("Coordinating: Phase 4, managing the loot split")
+	loot, extraMoney := manageLootSplit(&trevorClient, &franklinClient, &lesterClient, ocName)
+	log.Printf("Loot retrieved: $%d, extraMoney: $%d", loot, extraMoney)
 	return
 
 	// var distractionStatus *pb.PhaseStatus

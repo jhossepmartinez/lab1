@@ -32,6 +32,26 @@ type server struct {
 	pb.UnimplementedLesterServiceServer
 }
 
+func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb.Ack, error) {
+	cut := cutDetails.ReceivedCut
+	total := cutDetails.Loot + cutDetails.ExtraMoeny
+	remainder := total % 4
+
+	split := total / 4
+	lesterCut := split + remainder
+	var message string
+	if cut == lesterCut {
+		message = "Excelente! el pago es correcto!"
+	} else {
+		message = "Mal ahi..."
+	}
+
+	log.Println("Heist successful! Confirming cut to Michael.")
+	return &pb.Ack{
+		Acknowledged: true,
+		Message:      message,
+	}, nil
+}
 func (s *server) ProposeHeistOffer(ctx context.Context, empty *pb.Empty) (*pb.HeistOffer, error) {
 	if rand.Int31n(100) < 10 {
 		return nil, nil
@@ -91,8 +111,8 @@ func StartStarsNotification(frequency int) {
 	}
 
 	stars := 0
-	// ticker := time.NewTicker(time.Duration(frequency) * turnDuration)
-	ticker := time.NewTicker(10 * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(frequency) * turnDuration)
+	// ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
 	log.Println("Stars notifications started")

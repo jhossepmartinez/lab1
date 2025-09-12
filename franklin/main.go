@@ -30,6 +30,8 @@ var phaseState struct {
 	message          string
 	current_stars    int32
 	activateHability bool
+	extraMoney       int32
+	totalLoot        int32
 }
 
 func init() {
@@ -38,12 +40,32 @@ func init() {
 	phaseState.activateHability = false
 }
 
+func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb.Ack, error) {
+	cut := cutDetails.ReceivedCut
+	total := cutDetails.Loot + cutDetails.ExtraMoeny
+
+	split := total / 4
+	var message string
+	if cut == split {
+		message = "Un placer hacer negocios"
+	} else {
+		message = "PIPIPIPIPI"
+	}
+
+	log.Println("Heist successful! Confirming cut to Michael.")
+	return &pb.Ack{
+		Acknowledged: true,
+		Message:      message,
+	}, nil
+}
 func (s *server) CheckDistractionStatus(ctx context.Context, details *pb.Empty) (*pb.PhaseStatus, error) {
 	phaseState.mu.Lock()
 	defer phaseState.mu.Unlock()
 	return &pb.PhaseStatus{
-		Status:  phaseState.status,
-		Message: phaseState.message,
+		Status:     phaseState.status,
+		Message:    phaseState.message,
+		ExtraMoney: phaseState.extraMoney,
+		TotalLoot:  phaseState.totalLoot,
 	}, nil
 }
 
@@ -114,6 +136,7 @@ func (s *server) StartDistraction(ctx context.Context, details *pb.DistractionDe
 
 func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empty, error) {
 	log.Printf("Starting hit, %d turns needed", details.TurnsNeeded)
+	loot := details.Loot
 	go consumeStarNotifications()
 	go func() {
 		phaseState.status = pb.PhaseStatus_IN_PROGESS
@@ -146,11 +169,19 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 			log.Printf("Hit succeeded after %d turns, extra money earned: $%d", turns_needed, extraMoney)
 			phaseState.current_stars = 0
 			phaseState.activateHability = false
+			phaseState.extraMoney = int32(extraMoney)
 			phaseState.status = pb.PhaseStatus_SUCCESS
+			phaseState.totalLoot = loot + phaseState.extraMoney
 		}
 		phaseState.mu.Unlock()
 	}()
 	return &pb.Empty{}, nil
+}
+func (s *server) RetrieveLoot(ctx context.Context, empty *pb.Empty) (*pb.LootDetails, error) {
+	return &pb.LootDetails{
+		Loot:       phaseState.totalLoot - phaseState.extraMoney,
+		ExtraMoney: phaseState.extraMoney,
+	}, nil
 }
 
 func main() {

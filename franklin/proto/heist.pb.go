@@ -359,6 +359,8 @@ type PhaseStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        PhaseStatus_Status     `protobuf:"varint,1,opt,name=status,proto3,enum=heist.PhaseStatus_Status" json:"status,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	ExtraMoney    int32                  `protobuf:"varint,3,opt,name=extraMoney,proto3" json:"extraMoney,omitempty"`
+	TotalLoot     int32                  `protobuf:"varint,4,opt,name=totalLoot,proto3" json:"totalLoot,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -405,6 +407,20 @@ func (x *PhaseStatus) GetMessage() string {
 		return x.Message
 	}
 	return ""
+}
+
+func (x *PhaseStatus) GetExtraMoney() int32 {
+	if x != nil {
+		return x.ExtraMoney
+	}
+	return 0
+}
+
+func (x *PhaseStatus) GetTotalLoot() int32 {
+	if x != nil {
+		return x.TotalLoot
+	}
+	return 0
 }
 
 type DistractionDetails struct {
@@ -506,6 +522,7 @@ func (x *NotificationCommand) GetFrequency() int32 {
 type HitDetails struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TurnsNeeded   int32                  `protobuf:"varint,1,opt,name=turns_needed,json=turnsNeeded,proto3" json:"turns_needed,omitempty"`
+	Loot          int32                  `protobuf:"varint,2,opt,name=loot,proto3" json:"loot,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -547,6 +564,177 @@ func (x *HitDetails) GetTurnsNeeded() int32 {
 	return 0
 }
 
+func (x *HitDetails) GetLoot() int32 {
+	if x != nil {
+		return x.Loot
+	}
+	return 0
+}
+
+type LootDetails struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Loot          int32                  `protobuf:"varint,1,opt,name=loot,proto3" json:"loot,omitempty"`
+	ExtraMoney    int32                  `protobuf:"varint,2,opt,name=extra_money,json=extraMoney,proto3" json:"extra_money,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LootDetails) Reset() {
+	*x = LootDetails{}
+	mi := &file_proto_heist_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LootDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LootDetails) ProtoMessage() {}
+
+func (x *LootDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_heist_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LootDetails.ProtoReflect.Descriptor instead.
+func (*LootDetails) Descriptor() ([]byte, []int) {
+	return file_proto_heist_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *LootDetails) GetLoot() int32 {
+	if x != nil {
+		return x.Loot
+	}
+	return 0
+}
+
+func (x *LootDetails) GetExtraMoney() int32 {
+	if x != nil {
+		return x.ExtraMoney
+	}
+	return 0
+}
+
+type CutDetails struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Loot          int32                  `protobuf:"varint,1,opt,name=loot,proto3" json:"loot,omitempty"`
+	ExtraMoeny    int32                  `protobuf:"varint,2,opt,name=extra_moeny,json=extraMoeny,proto3" json:"extra_moeny,omitempty"`
+	ReceivedCut   int32                  `protobuf:"varint,3,opt,name=received_cut,json=receivedCut,proto3" json:"received_cut,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CutDetails) Reset() {
+	*x = CutDetails{}
+	mi := &file_proto_heist_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CutDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CutDetails) ProtoMessage() {}
+
+func (x *CutDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_heist_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CutDetails.ProtoReflect.Descriptor instead.
+func (*CutDetails) Descriptor() ([]byte, []int) {
+	return file_proto_heist_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CutDetails) GetLoot() int32 {
+	if x != nil {
+		return x.Loot
+	}
+	return 0
+}
+
+func (x *CutDetails) GetExtraMoeny() int32 {
+	if x != nil {
+		return x.ExtraMoeny
+	}
+	return 0
+}
+
+func (x *CutDetails) GetReceivedCut() int32 {
+	if x != nil {
+		return x.ReceivedCut
+	}
+	return 0
+}
+
+type Ack struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Acknowledged  bool                   `protobuf:"varint,1,opt,name=acknowledged,proto3" json:"acknowledged,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Ack) Reset() {
+	*x = Ack{}
+	mi := &file_proto_heist_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Ack) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Ack) ProtoMessage() {}
+
+func (x *Ack) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_heist_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Ack.ProtoReflect.Descriptor instead.
+func (*Ack) Descriptor() ([]byte, []int) {
+	return file_proto_heist_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *Ack) GetAcknowledged() bool {
+	if x != nil {
+		return x.Acknowledged
+	}
+	return false
+}
+
+func (x *Ack) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_proto_heist_proto protoreflect.FileDescriptor
 
 const file_proto_heist_proto_rawDesc = "" +
@@ -565,10 +753,14 @@ const file_proto_heist_proto_rawDesc = "" +
 	"\fBasicMessage\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"'\n" +
 	"\vPhaseResult\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa3\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xe1\x01\n" +
 	"\vPhaseStatus\x121\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x19.heist.PhaseStatus.StatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"G\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
+	"\n" +
+	"extraMoney\x18\x03 \x01(\x05R\n" +
+	"extraMoney\x12\x1c\n" +
+	"\ttotalLoot\x18\x04 \x01(\x05R\ttotalLoot\"G\n" +
 	"\x06Status\x12\x0e\n" +
 	"\n" +
 	"IN_PROGESS\x10\x00\x12\v\n" +
@@ -582,18 +774,39 @@ const file_proto_heist_proto_rawDesc = "" +
 	"\tfrequency\x18\x02 \x01(\x05R\tfrequency\"\x1e\n" +
 	"\aCommand\x12\t\n" +
 	"\x05START\x10\x00\x12\b\n" +
-	"\x04STOP\x10\x01\"/\n" +
+	"\x04STOP\x10\x01\"C\n" +
 	"\n" +
 	"HitDetails\x12!\n" +
-	"\fturns_needed\x18\x01 \x01(\x05R\vturnsNeeded2\xbb\x01\n" +
+	"\fturns_needed\x18\x01 \x01(\x05R\vturnsNeeded\x12\x12\n" +
+	"\x04loot\x18\x02 \x01(\x05R\x04loot\"B\n" +
+	"\vLootDetails\x12\x12\n" +
+	"\x04loot\x18\x01 \x01(\x05R\x04loot\x12\x1f\n" +
+	"\vextra_money\x18\x02 \x01(\x05R\n" +
+	"extraMoney\"d\n" +
+	"\n" +
+	"CutDetails\x12\x12\n" +
+	"\x04loot\x18\x01 \x01(\x05R\x04loot\x12\x1f\n" +
+	"\vextra_moeny\x18\x02 \x01(\x05R\n" +
+	"extraMoeny\x12!\n" +
+	"\freceived_cut\x18\x03 \x01(\x05R\vreceivedCut\"C\n" +
+	"\x03Ack\x12\"\n" +
+	"\facknowledged\x18\x01 \x01(\bR\facknowledged\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xe8\x01\n" +
 	"\rLesterService\x124\n" +
 	"\x11ProposeHeistOffer\x12\f.heist.Empty\x1a\x11.heist.HeistOffer\x12.\n" +
 	"\rDecideOnOffer\x12\x0f.heist.Decision\x1a\f.heist.Empty\x12D\n" +
-	"\x18ManageStarsNotifications\x12\x1a.heist.NotificationCommand\x1a\f.heist.Empty2\xb7\x01\n" +
+	"\x18ManageStarsNotifications\x12\x1a.heist.NotificationCommand\x1a\f.heist.Empty\x12+\n" +
+	"\n" +
+	"ConfirmCut\x12\x11.heist.CutDetails\x1a\n" +
+	".heist.Ack2\x96\x02\n" +
 	"\x0fOperatorService\x12;\n" +
 	"\x10StartDistraction\x12\x19.heist.DistractionDetails\x1a\f.heist.Empty\x12:\n" +
 	"\x16CheckDistractionStatus\x12\f.heist.Empty\x1a\x12.heist.PhaseStatus\x12+\n" +
-	"\bStartHit\x12\x11.heist.HitDetails\x1a\f.heist.EmptyB\bZ\x06/protob\x06proto3"
+	"\bStartHit\x12\x11.heist.HitDetails\x1a\f.heist.Empty\x120\n" +
+	"\fRetrieveLoot\x12\f.heist.Empty\x1a\x12.heist.LootDetails\x12+\n" +
+	"\n" +
+	"ConfirmCut\x12\x11.heist.CutDetails\x1a\n" +
+	".heist.AckB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_heist_proto_rawDescOnce sync.Once
@@ -608,7 +821,7 @@ func file_proto_heist_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_heist_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_proto_heist_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_heist_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_proto_heist_proto_goTypes = []any{
 	(PhaseStatus_Status)(0),          // 0: heist.PhaseStatus.Status
 	(NotificationCommand_Command)(0), // 1: heist.NotificationCommand.Command
@@ -621,6 +834,9 @@ var file_proto_heist_proto_goTypes = []any{
 	(*DistractionDetails)(nil),       // 8: heist.DistractionDetails
 	(*NotificationCommand)(nil),      // 9: heist.NotificationCommand
 	(*HitDetails)(nil),               // 10: heist.HitDetails
+	(*LootDetails)(nil),              // 11: heist.LootDetails
+	(*CutDetails)(nil),               // 12: heist.CutDetails
+	(*Ack)(nil),                      // 13: heist.Ack
 }
 var file_proto_heist_proto_depIdxs = []int32{
 	0,  // 0: heist.PhaseStatus.status:type_name -> heist.PhaseStatus.Status
@@ -628,17 +844,23 @@ var file_proto_heist_proto_depIdxs = []int32{
 	2,  // 2: heist.LesterService.ProposeHeistOffer:input_type -> heist.Empty
 	4,  // 3: heist.LesterService.DecideOnOffer:input_type -> heist.Decision
 	9,  // 4: heist.LesterService.ManageStarsNotifications:input_type -> heist.NotificationCommand
-	8,  // 5: heist.OperatorService.StartDistraction:input_type -> heist.DistractionDetails
-	2,  // 6: heist.OperatorService.CheckDistractionStatus:input_type -> heist.Empty
-	10, // 7: heist.OperatorService.StartHit:input_type -> heist.HitDetails
-	3,  // 8: heist.LesterService.ProposeHeistOffer:output_type -> heist.HeistOffer
-	2,  // 9: heist.LesterService.DecideOnOffer:output_type -> heist.Empty
-	2,  // 10: heist.LesterService.ManageStarsNotifications:output_type -> heist.Empty
-	2,  // 11: heist.OperatorService.StartDistraction:output_type -> heist.Empty
-	7,  // 12: heist.OperatorService.CheckDistractionStatus:output_type -> heist.PhaseStatus
-	2,  // 13: heist.OperatorService.StartHit:output_type -> heist.Empty
-	8,  // [8:14] is the sub-list for method output_type
-	2,  // [2:8] is the sub-list for method input_type
+	12, // 5: heist.LesterService.ConfirmCut:input_type -> heist.CutDetails
+	8,  // 6: heist.OperatorService.StartDistraction:input_type -> heist.DistractionDetails
+	2,  // 7: heist.OperatorService.CheckDistractionStatus:input_type -> heist.Empty
+	10, // 8: heist.OperatorService.StartHit:input_type -> heist.HitDetails
+	2,  // 9: heist.OperatorService.RetrieveLoot:input_type -> heist.Empty
+	12, // 10: heist.OperatorService.ConfirmCut:input_type -> heist.CutDetails
+	3,  // 11: heist.LesterService.ProposeHeistOffer:output_type -> heist.HeistOffer
+	2,  // 12: heist.LesterService.DecideOnOffer:output_type -> heist.Empty
+	2,  // 13: heist.LesterService.ManageStarsNotifications:output_type -> heist.Empty
+	13, // 14: heist.LesterService.ConfirmCut:output_type -> heist.Ack
+	2,  // 15: heist.OperatorService.StartDistraction:output_type -> heist.Empty
+	7,  // 16: heist.OperatorService.CheckDistractionStatus:output_type -> heist.PhaseStatus
+	2,  // 17: heist.OperatorService.StartHit:output_type -> heist.Empty
+	11, // 18: heist.OperatorService.RetrieveLoot:output_type -> heist.LootDetails
+	13, // 19: heist.OperatorService.ConfirmCut:output_type -> heist.Ack
+	11, // [11:20] is the sub-list for method output_type
+	2,  // [2:11] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -655,7 +877,7 @@ func file_proto_heist_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_heist_proto_rawDesc), len(file_proto_heist_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

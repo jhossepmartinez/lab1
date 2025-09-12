@@ -22,6 +22,7 @@ const (
 	LesterService_ProposeHeistOffer_FullMethodName        = "/heist.LesterService/ProposeHeistOffer"
 	LesterService_DecideOnOffer_FullMethodName            = "/heist.LesterService/DecideOnOffer"
 	LesterService_ManageStarsNotifications_FullMethodName = "/heist.LesterService/ManageStarsNotifications"
+	LesterService_ConfirmCut_FullMethodName               = "/heist.LesterService/ConfirmCut"
 )
 
 // LesterServiceClient is the client API for LesterService service.
@@ -31,6 +32,7 @@ type LesterServiceClient interface {
 	ProposeHeistOffer(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HeistOffer, error)
 	DecideOnOffer(ctx context.Context, in *Decision, opts ...grpc.CallOption) (*Empty, error)
 	ManageStarsNotifications(ctx context.Context, in *NotificationCommand, opts ...grpc.CallOption) (*Empty, error)
+	ConfirmCut(ctx context.Context, in *CutDetails, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type lesterServiceClient struct {
@@ -71,6 +73,16 @@ func (c *lesterServiceClient) ManageStarsNotifications(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *lesterServiceClient) ConfirmCut(ctx context.Context, in *CutDetails, opts ...grpc.CallOption) (*Ack, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, LesterService_ConfirmCut_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LesterServiceServer is the server API for LesterService service.
 // All implementations must embed UnimplementedLesterServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type LesterServiceServer interface {
 	ProposeHeistOffer(context.Context, *Empty) (*HeistOffer, error)
 	DecideOnOffer(context.Context, *Decision) (*Empty, error)
 	ManageStarsNotifications(context.Context, *NotificationCommand) (*Empty, error)
+	ConfirmCut(context.Context, *CutDetails) (*Ack, error)
 	mustEmbedUnimplementedLesterServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedLesterServiceServer) DecideOnOffer(context.Context, *Decision
 }
 func (UnimplementedLesterServiceServer) ManageStarsNotifications(context.Context, *NotificationCommand) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ManageStarsNotifications not implemented")
+}
+func (UnimplementedLesterServiceServer) ConfirmCut(context.Context, *CutDetails) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmCut not implemented")
 }
 func (UnimplementedLesterServiceServer) mustEmbedUnimplementedLesterServiceServer() {}
 func (UnimplementedLesterServiceServer) testEmbeddedByValue()                       {}
@@ -172,6 +188,24 @@ func _LesterService_ManageStarsNotifications_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LesterService_ConfirmCut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CutDetails)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LesterServiceServer).ConfirmCut(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LesterService_ConfirmCut_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LesterServiceServer).ConfirmCut(ctx, req.(*CutDetails))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LesterService_ServiceDesc is the grpc.ServiceDesc for LesterService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,6 +225,10 @@ var LesterService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ManageStarsNotifications",
 			Handler:    _LesterService_ManageStarsNotifications_Handler,
 		},
+		{
+			MethodName: "ConfirmCut",
+			Handler:    _LesterService_ConfirmCut_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/heist.proto",
@@ -200,6 +238,8 @@ const (
 	OperatorService_StartDistraction_FullMethodName       = "/heist.OperatorService/StartDistraction"
 	OperatorService_CheckDistractionStatus_FullMethodName = "/heist.OperatorService/CheckDistractionStatus"
 	OperatorService_StartHit_FullMethodName               = "/heist.OperatorService/StartHit"
+	OperatorService_RetrieveLoot_FullMethodName           = "/heist.OperatorService/RetrieveLoot"
+	OperatorService_ConfirmCut_FullMethodName             = "/heist.OperatorService/ConfirmCut"
 )
 
 // OperatorServiceClient is the client API for OperatorService service.
@@ -209,6 +249,8 @@ type OperatorServiceClient interface {
 	StartDistraction(ctx context.Context, in *DistractionDetails, opts ...grpc.CallOption) (*Empty, error)
 	CheckDistractionStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PhaseStatus, error)
 	StartHit(ctx context.Context, in *HitDetails, opts ...grpc.CallOption) (*Empty, error)
+	RetrieveLoot(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*LootDetails, error)
+	ConfirmCut(ctx context.Context, in *CutDetails, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type operatorServiceClient struct {
@@ -249,6 +291,26 @@ func (c *operatorServiceClient) StartHit(ctx context.Context, in *HitDetails, op
 	return out, nil
 }
 
+func (c *operatorServiceClient) RetrieveLoot(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*LootDetails, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LootDetails)
+	err := c.cc.Invoke(ctx, OperatorService_RetrieveLoot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *operatorServiceClient) ConfirmCut(ctx context.Context, in *CutDetails, opts ...grpc.CallOption) (*Ack, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, OperatorService_ConfirmCut_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OperatorServiceServer is the server API for OperatorService service.
 // All implementations must embed UnimplementedOperatorServiceServer
 // for forward compatibility.
@@ -256,6 +318,8 @@ type OperatorServiceServer interface {
 	StartDistraction(context.Context, *DistractionDetails) (*Empty, error)
 	CheckDistractionStatus(context.Context, *Empty) (*PhaseStatus, error)
 	StartHit(context.Context, *HitDetails) (*Empty, error)
+	RetrieveLoot(context.Context, *Empty) (*LootDetails, error)
+	ConfirmCut(context.Context, *CutDetails) (*Ack, error)
 	mustEmbedUnimplementedOperatorServiceServer()
 }
 
@@ -274,6 +338,12 @@ func (UnimplementedOperatorServiceServer) CheckDistractionStatus(context.Context
 }
 func (UnimplementedOperatorServiceServer) StartHit(context.Context, *HitDetails) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartHit not implemented")
+}
+func (UnimplementedOperatorServiceServer) RetrieveLoot(context.Context, *Empty) (*LootDetails, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrieveLoot not implemented")
+}
+func (UnimplementedOperatorServiceServer) ConfirmCut(context.Context, *CutDetails) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmCut not implemented")
 }
 func (UnimplementedOperatorServiceServer) mustEmbedUnimplementedOperatorServiceServer() {}
 func (UnimplementedOperatorServiceServer) testEmbeddedByValue()                         {}
@@ -350,6 +420,42 @@ func _OperatorService_StartHit_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OperatorService_RetrieveLoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OperatorServiceServer).RetrieveLoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OperatorService_RetrieveLoot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OperatorServiceServer).RetrieveLoot(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OperatorService_ConfirmCut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CutDetails)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OperatorServiceServer).ConfirmCut(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OperatorService_ConfirmCut_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OperatorServiceServer).ConfirmCut(ctx, req.(*CutDetails))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OperatorService_ServiceDesc is the grpc.ServiceDesc for OperatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -368,6 +474,14 @@ var OperatorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartHit",
 			Handler:    _OperatorService_StartHit_Handler,
+		},
+		{
+			MethodName: "RetrieveLoot",
+			Handler:    _OperatorService_RetrieveLoot_Handler,
+		},
+		{
+			MethodName: "ConfirmCut",
+			Handler:    _OperatorService_ConfirmCut_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

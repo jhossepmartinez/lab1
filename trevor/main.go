@@ -30,11 +30,32 @@ var phaseState struct {
 	message          string
 	current_stars    int32
 	activateHability bool
+	extraMoney       int32
+	totalLoot        int32
 }
 
 func init() {
 	phaseState.status = pb.PhaseStatus_AWAITING_ORDERS
 }
+func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb.Ack, error) {
+	cut := cutDetails.ReceivedCut
+	total := cutDetails.Loot + cutDetails.ExtraMoeny
+
+	split := total / 4
+	var message string
+	if cut == split {
+		message = "Justo lo que esperaba"
+	} else {
+		message = "Justo lo que no esperaba"
+	}
+
+	log.Println("Heist successful! Confirming cut to Michael.")
+	return &pb.Ack{
+		Acknowledged: true,
+		Message:      message,
+	}, nil
+}
+
 func consumeStarNotifications() {
 	conn, err := amqp.Dial("amqp://guest:guest@192.168.1.6:5673/")
 	if err != nil {
@@ -106,8 +127,16 @@ func (s *server) StartDistraction(ctx context.Context, details *pb.DistractionDe
 	return &pb.Empty{}, nil
 }
 
+func (s *server) RetrieveLoot(ctx context.Context, empty *pb.Empty) (*pb.LootDetails, error) {
+	return &pb.LootDetails{
+		Loot:       phaseState.totalLoot - phaseState.extraMoney,
+		ExtraMoney: phaseState.extraMoney,
+	}, nil
+}
+
 func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empty, error) {
 	log.Printf("Starting hit, %d turns needed", details.TurnsNeeded)
+	loot := details.Loot
 	go consumeStarNotifications()
 	go func() {
 		phaseState.status = pb.PhaseStatus_IN_PROGESS
@@ -124,7 +153,7 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 			if phaseState.activateHability && phaseState.current_stars >= 7 {
 				log.Printf("Hit failed at turn %d due to 7 or more stars", turn)
 				phaseState.status = pb.PhaseStatus_FAILURE
-				phaseState.message = "Trevor: Too many stars! The cops arrived!"
+				phaseState.message = "Too many stars! The cops arrived!"
 				phaseState.current_stars = 0
 				phaseState.mu.Unlock()
 				break
@@ -134,7 +163,12 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 		phaseState.mu.Lock()
 		if phaseState.status != pb.PhaseStatus_FAILURE {
 			log.Printf("Hit succeeded after %d turns, extra money earned: $%d", turns_needed, extraMoney)
+			phaseState.current_stars = 0
+			phaseState.activateHability = false
+			phaseState.extraMoney = int32(extraMoney)
 			phaseState.status = pb.PhaseStatus_SUCCESS
+			phaseState.totalLoot = loot + phaseState.extraMoney
+
 		}
 		phaseState.mu.Unlock()
 	}()
