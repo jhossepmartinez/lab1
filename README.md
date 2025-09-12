@@ -4,11 +4,11 @@ ehe6gqRsS2Fk
 lester
 50051
 
-dist014
-KRZ65kfAEmpB
-10.35.168.24
-Michael
-50052
+dist016
+jrKU59Umn2TW
+10.35.168.26
+Franklin
+50054
 
 dist015
 aNASDGkYnQ8F
@@ -16,11 +16,11 @@ aNASDGkYnQ8F
 Trevor
 50053
 
-dist016
-jrKU59Umn2TW
-10.35.168.26
-Franklin
-50054
+dist014
+KRZ65kfAEmpB
+10.35.168.24
+Michael
+50052
 
 
 protoc --go_out=. --go-grpc_out=. main.proto
