@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -57,7 +58,13 @@ func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb
 }
 
 func consumeStarNotifications() {
-	conn, err := amqp.Dial("amqp://guest:guest@192.168.1.6:5673/")
+	var rabbitMQHOST string
+	if os.Getenv("RABBITMQ_HOST") == "" {
+		rabbitMQHOST = "192.168.1.6"
+	} else {
+		rabbitMQHOST = os.Getenv("RABBITMQ_HOST")
+	}
+	conn, err := amqp.Dial("amqp://admin:admin@" + rabbitMQHOST + ":5673/")
 	if err != nil {
 		log.Printf("Failed to connect to RabbitMQ: %v", err)
 		return
@@ -193,6 +200,7 @@ func main() {
 	grpc_server := grpc.NewServer()
 	pb.RegisterOperatorServiceServer(grpc_server, &server{})
 	log.Printf("Trevor gRPC server listening on port 50053")
+	log.Printf("RabbitMQ HOST: %s", os.Getenv("RABBITMQ_HOST"))
 	if err := grpc_server.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

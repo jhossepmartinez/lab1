@@ -27,3 +27,4 @@ protoc --go_out=. --go-grpc_out=. main.proto
 protoc --go_out=./lester --go-grpc_out=./lester ./proto/heist.proto && protoc --go_out=./michael --go-grpc_out=./michael ./proto/heist.proto
 
 
+ scp -r ./lab1/  dist@dist013.inf.santiago.usm.cl:~/

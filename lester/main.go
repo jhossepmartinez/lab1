@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"strconv"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -93,7 +94,14 @@ func (s *server) ManageStarsNotifications(ctx context.Context, commandDetails *p
 }
 
 func StartStarsNotification(frequency int) {
-	conn, err := amqp.Dial("amqp://guest:guest@192.168.1.6:5673/")
+	var rabbitMQHOST string
+	if os.Getenv("RABBITMQ_HOST") == "" {
+		rabbitMQHOST = "192.168.1.6"
+	} else {
+		rabbitMQHOST = os.Getenv("RABBITMQ_HOST")
+	}
+	conn, err := amqp.Dial("amqp://admin:admin@" + rabbitMQHOST + ":5673/")
+
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
@@ -142,6 +150,7 @@ func main() {
 	grpc_server := grpc.NewServer()
 	pb.RegisterLesterServiceServer(grpc_server, &server{})
 	log.Printf("Lester gRPC server listening on port 50051")
+	log.Printf("RabbitMQ HOST: %s", os.Getenv("RABBITMQ_HOST"))
 	if err := grpc_server.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

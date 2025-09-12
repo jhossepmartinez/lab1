@@ -8,6 +8,6 @@ COPY . .
 RUN go build -o /main
 
 EXPOSE 50051
-ENV RABBITMQ_HOST=amqp://admin:admin@192.168.1.6:5673/
+ENV RABBITMQ_HOST=10.35.168.23
 CMD ["/main"]
 
