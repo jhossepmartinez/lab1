@@ -39,8 +39,8 @@ func init() {
 }
 
 func (s *server) CheckDistractionStatus(ctx context.Context, details *pb.Empty) (*pb.PhaseStatus, error) {
-	// phaseState.mu.Lock()
-	// defer phaseState.mu.Unlock()
+	phaseState.mu.Lock()
+	defer phaseState.mu.Unlock()
 	return &pb.PhaseStatus{
 		Status:  phaseState.status,
 		Message: phaseState.message,
@@ -78,8 +78,11 @@ func consumeStarNotifications() {
 	for d := range msgs {
 		stars, _ := strconv.Atoi(string(d.Body))
 		phaseState.mu.Lock()
-		phaseState.current_stars = int32(stars)
-		log.Printf("<- Received star update: Now at %d stars.", phaseState.current_stars)
+		if phaseState.status == pb.PhaseStatus_IN_PROGESS {
+			phaseState.current_stars = int32(stars)
+			log.Printf("<- Received star update: Now at %d stars.", phaseState.current_stars)
+			// phaseState.mu.Unlock()
+		}
 		phaseState.mu.Unlock()
 	}
 }
@@ -99,12 +102,12 @@ func (s *server) StartDistraction(ctx context.Context, details *pb.DistractionDe
 				break
 			}
 		}
-		// phaseState.mu.Lock()
+		phaseState.mu.Lock()
 		if phaseState.status != pb.PhaseStatus_FAILURE {
 			log.Printf("Distraction succeeded after %d turns", turn-1)
 			phaseState.status = pb.PhaseStatus_SUCCESS
 		}
-		// phaseState.mu.Unlock()
+		phaseState.mu.Unlock()
 	}()
 	return &pb.Empty{}, nil
 }
@@ -130,18 +133,22 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 			if phaseState.current_stars >= 5 {
 				log.Printf("Hit failed at turn %d due to 5 or more stars", turn)
 				phaseState.status = pb.PhaseStatus_FAILURE
-				phaseState.message = "Too many stars! The cops arrived!"
+				phaseState.message = "Franklin: Too many stars! The cops arrived!"
 				phaseState.current_stars = 0
+				phaseState.activateHability = false
 				phaseState.mu.Unlock()
 				break
 			}
 			phaseState.mu.Unlock()
 		}
+		phaseState.mu.Lock()
 		if phaseState.status != pb.PhaseStatus_FAILURE {
 			log.Printf("Hit succeeded after %d turns, extra money earned: $%d", turns_needed, extraMoney)
 			phaseState.current_stars = 0
+			phaseState.activateHability = false
 			phaseState.status = pb.PhaseStatus_SUCCESS
 		}
+		phaseState.mu.Unlock()
 	}()
 	return &pb.Empty{}, nil
 }

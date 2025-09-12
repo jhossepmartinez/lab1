@@ -77,7 +77,7 @@ func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.He
 		oc = franklinClient
 		turns_needed = offer.FranklinSuccess
 	}
-	log.Printf("Running distraction with %s", ocName)
+	log.Printf("Running the HIT with %s", ocName)
 	_, err := (*oc).StartHit(context.Background(), &pb.HitDetails{TurnsNeeded: 200 - turns_needed})
 	if err != nil {
 		log.Fatal("Could not start hit: &v", err)
@@ -148,6 +148,7 @@ func main() {
 		Command: pb.NotificationCommand_STOP,
 	})
 	log.Println("Coordinating: Phase 3, the hit, success")
+	return
 
 	// var distractionStatus *pb.PhaseStatus
 	// if offer.FranklinSuccess > offer.TrevorSuccess {
