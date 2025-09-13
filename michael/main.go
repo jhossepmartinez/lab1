@@ -271,21 +271,21 @@ func main() {
 		franklinHost = localHost
 	}
 	log.Printf("Using hosts - lester: %s, trevor: %s, franklin: %s", lesterHost, trevorHost, franklinHost)
-	lesterConn, err := grpc.Dial("192.168.1.6:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	lesterConn, err := grpc.Dial("10.35.168.23:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to lester: %v", err)
 	}
 	defer lesterConn.Close()
 	lesterClient := pb.NewLesterServiceClient(lesterConn)
 
-	franklinConn, err := grpc.Dial("192.168.1.6:50054", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	franklinConn, err := grpc.Dial("10.35.168.26:50054", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to franklin: %v", err)
 	}
 	defer franklinConn.Close()
 	franklinClient := pb.NewOperatorServiceClient(franklinConn)
 
-	trevorConn, err := grpc.Dial("192.168.1.6:50053", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	trevorConn, err := grpc.Dial("10.35.168.25:50053", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to Trevor: %v", err)
 	}
