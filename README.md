@@ -1,5 +1,7 @@
 ## Integrantes:
 Jhossep Martinez / 202173530-5
+Fernando Xais / 202273551-1
+Gabriela Yáñez / 202273511-2
 
 ## Consideraciones:
 - La maquina virtual de lester (dist013) tiene rabbitMQ corriendo por lo que no es necesario resetearlo
