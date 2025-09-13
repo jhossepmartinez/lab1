@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"bufio"
+	"strings"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
@@ -28,6 +30,14 @@ const (
 
 var stopChan = make(chan bool)
 var rejections int32 = 0
+var offers []HeistOfferData
+
+type HeistOfferData struct {
+	Loot int32
+	PoliceRisk int32
+	TrevorSuccess int32
+	FranklinSuccess int32
+}
 
 type server struct {
 	pb.UnimplementedLesterServiceServer
@@ -54,19 +64,23 @@ func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb
 	}, nil
 }
 func (s *server) ProposeHeistOffer(ctx context.Context, empty *pb.Empty) (*pb.HeistOffer, error) {
-	if rand.Int31n(100) < 10 {
-		return nil, nil
-	}
 	if rejections == 3 {
 		log.Printf("Michael rejected 3 offers, making him wait %d seconds", waitDuration/time.Second)
 		time.Sleep(waitDuration)
 		rejections = 0
 	}
+
+	if rand.Int31n(100) < 10 {
+		return nil, nil
+	}
+	
+	index := rand.Intn(len(offers))
+
 	offer := &pb.HeistOffer{
-		Loot:            int32(rand.Int31n(1000000) + 500000),
-		PoliceRisk:      int32(rand.Int31n(100)),
-		TrevorSuccess:   int32(rand.Int31n(100)),
-		FranklinSuccess: int32(rand.Int31n(100)),
+		Loot:            offers[index].Loot,
+		PoliceRisk:      offers[index].PoliceRisk,
+		TrevorSuccess:   offers[index].TrevorSuccess,
+		FranklinSuccess: offers[index].FranklinSuccess,
 	}
 	log.Printf("Proposed offer: &{Loot: %d, PoliceRisk: %d, TrevorSuccess: %d, FranklinSuccess: %d}", offer.Loot, offer.PoliceRisk, offer.TrevorSuccess, offer.FranklinSuccess)
 	return offer, nil
@@ -79,6 +93,66 @@ func (s *server) DecideOnOffer(ctx context.Context, decision *pb.Decision) (*pb.
 		rejections = 0
 	}
 	return &pb.Empty{}, nil
+}
+
+func loadOffers(filePath string) error{
+	file, err := os.Open(filePath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	for scanner.Scan(){
+		line := scanner.Text()
+		fields:= strings.Split(line, ",")
+
+		var offerData HeistOfferData
+
+		if fields[0] == ""{
+			offerData.Loot = -1
+		} else {
+			loot, err:= strconv.ParseInt(fields[0], 10, 32)
+			if err != nil {
+    			loot = -1
+			}
+			offerData.Loot = int32(loot)
+		}
+
+		if fields[1] == ""{
+			offerData.FranklinSuccess = -1
+		} else {
+			franklinSuccess, err:= strconv.ParseInt(fields[1], 10, 32)
+			if err != nil {
+    			franklinSuccess = -1
+			}
+			offerData.FranklinSuccess = int32(franklinSuccess)
+		}
+
+		if fields[2] == ""{
+			offerData.TrevorSuccess = -1
+		} else {
+			trevorSuccess, err:= strconv.ParseInt(fields[2], 10, 32)
+			if err != nil {
+    			trevorSuccess = -1
+			}
+			offerData.TrevorSuccess = int32(trevorSuccess)
+		}
+
+		if fields[3] == ""{
+			offerData.PoliceRisk = -1
+		} else {
+			policeRisk, err:= strconv.ParseInt(fields[3], 10, 32)
+			if err != nil {
+    			policeRisk = -1
+			}
+			offerData.PoliceRisk = int32(policeRisk)
+		}
+
+		offers = append(offers, offerData)
+	}
+	return nil
 }
 
 func (s *server) ManageStarsNotifications(ctx context.Context, commandDetails *pb.NotificationCommand) (*pb.Empty, error) {
@@ -142,6 +216,12 @@ func StartStarsNotification(frequency int) {
 }
 
 func main() {
+		err := loadOffers("ofertas_grande.csv")
+
+	if err != nil {
+    	log.Fatalf("Failed to load offers from CSV: %v", err)
+	}
+	
 	rand.Seed(time.Now().UnixNano())
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
