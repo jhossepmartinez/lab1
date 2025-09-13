@@ -4,6 +4,7 @@
 - Gabriela Yáñez / 202273511-2
 
 ## Consideraciones:
+- Las imagenes ya estan compiladas pero se puede ejecutar el siguiente comando en cada vm: ```make docker-build-<trevor|lester|michael|franklin>``` dependiendo de la vm en la que este.
 - La maquina virtual de lester (dist013) tiene rabbitMQ corriendo por lo que no es necesario resetearlo
 - En el directorio de Lester se encuentra el archivo "ofertas_grandes.cvs", desde aquí se leen las ofertas y se ofrecen constantemente de forma aleatoria cada vez que michael solicita una. En caso de querer usar otro archivo este debe ir en el directorio de michael, debe cambiarse el nombre del archivo a cargar en el main de lester y debe volver a compilarse la maquina de lester.
 - Para poder ver el archivo Reporte.txt hay que ejecutar el siguiente comando en la maquina de michael:
@@ -23,7 +24,6 @@
 - Ir a la VM dist16 y ejecutar ```make docker-run-franklin```
 - Ir a la VM dist15 y ejecutar ```make docker-run-trevor```
 - Ir a la VM dist14 y ejecutar ```make docker-run-michael```
-
 
 
 Credenciales VM:
