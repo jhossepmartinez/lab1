@@ -21,6 +21,11 @@ const checkIntervalDuration = 1 * time.Second
 func isOfferAcceptable(offer *pb.HeistOffer) bool {
 	return (offer.TrevorSuccess > 50 || offer.FranklinSuccess > 50) && offer.PoliceRisk < 80
 }
+
+func isOfferValid(offer *pb.HeistOffer) bool {
+	return (offer.Loot != -1 && offer.TrevorSuccess != -1 && offer.FranklinSuccess != -1 && offer.PoliceRisk != -1)
+}
+
 func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 	for {
 		offer, err := (*lc).ProposeHeistOffer(context.Background(), &pb.Empty{})
@@ -32,6 +37,13 @@ func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 			continue
 		}
 		log.Printf("Received offer: &{Loot: %d, PoliceRisk: %d, TrevorSuccess: %d, FranklinSuccess: %d}", offer.Loot, offer.PoliceRisk, offer.TrevorSuccess, offer.FranklinSuccess)
+		
+		if !isOfferValid(offer){
+			log.Println("Offer has missing fields, rejecting...")
+			(*lc).DecideOnOffer(context.Background(), &pb.Decision{Accepted: false})
+			continue
+		}
+		
 		if isOfferAcceptable(offer) {
 			log.Println("Offer is acceptable, accepting...")
 			(*lc).DecideOnOffer(context.Background(), &pb.Decision{Accepted: true})
