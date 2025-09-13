@@ -52,16 +52,20 @@ docker-build-trevor:
 	sudo docker build -t trevor -f ./trevor/Dockerfile ./trevor
 
 docker-run-lester:
+	sudo docker rm -f lester-container 2>/dev/null || true
 	sudo docker run --name lester-container -p 50051:50051 lester
 
 docker-run-michael:
+	sudo docker rm -f michael-container 2>/dev/null || true
 	sudo docker run --name michael-container -p 50052:50052 michael
 
 docker-run-franklin:
+	sudo docker rm -f franklin-container 2>/dev/null || true
 	sudo docker run --name franklin-container -p 50054:50054 franklin
 
 docker-run-trevor:
-	sudo docker run --name trevor-container -p 50053:50053 trevor
+	sudo docker rm -f trevor-container 2>/dev/null || true
+	sudo docker run --name trevor-container -p 50053:50053 trevo
 
 docker-logs-lester:
 	sudo docker logs -f lester-container
