@@ -32,6 +32,7 @@ var stopChan = make(chan bool)
 var rejections int32 = 0
 var offers []HeistOfferData
 
+// Estructura donde se almacenará la informacion de cada oferta
 type HeistOfferData struct {
 	Loot int32
 	PoliceRisk int32
@@ -43,6 +44,8 @@ type server struct {
 	pb.UnimplementedLesterServiceServer
 }
 
+//ConfirmCut: Verifica si el pago recibido es correcto, teniendo en cuenta que si la division no es exacta
+//			  el resto del dinero es para lester. Es un método de LesterService.
 func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb.Ack, error) {
 	cut := cutDetails.ReceivedCut
 	total := cutDetails.Loot + cutDetails.ExtraMoeny
@@ -63,6 +66,9 @@ func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb
 		Message:      message,
 	}, nil
 }
+
+//ProposeHeistOffer: Le propone una oferta a Michael (con probabilidad del 90%), si Michael rechaza 3 veces
+//					 entonces espera 10 segundos antes de volver a dar una oferta. Es un método de LesterService.
 func (s *server) ProposeHeistOffer(ctx context.Context, empty *pb.Empty) (*pb.HeistOffer, error) {
 	if rejections == 3 {
 		log.Printf("Michael rejected 3 offers, making him wait %d seconds", waitDuration/time.Second)
@@ -86,6 +92,8 @@ func (s *server) ProposeHeistOffer(ctx context.Context, empty *pb.Empty) (*pb.He
 	return offer, nil
 }
 
+//DecideOnOffer: Se recibe la decisión de Michael de aceptar o rechazar la oferta, se aumenta o reinicia
+// 				 el contador de rechazos según corresponda. Es un método de LesterService.	
 func (s *server) DecideOnOffer(ctx context.Context, decision *pb.Decision) (*pb.Empty, error) {
 	if !decision.Accepted {
 		rejections++
@@ -95,6 +103,8 @@ func (s *server) DecideOnOffer(ctx context.Context, decision *pb.Decision) (*pb.
 	return &pb.Empty{}, nil
 }
 
+//loadOffers: Carga las ofertas desde un archivo CSV, en caso de que la oferta tenga un campo faltante entonces
+//			  se le asigna el valor de -1 a ese campo. Es una función auxiliar.
 func loadOffers(filePath string) error{
 	file, err := os.Open(filePath)
     if err != nil {
@@ -155,6 +165,7 @@ func loadOffers(filePath string) error{
 	return nil
 }
 
+//ManageStarsNotifications: Inicia o detiene el envío de notificaciones de estrellas.
 func (s *server) ManageStarsNotifications(ctx context.Context, commandDetails *pb.NotificationCommand) (*pb.Empty, error) {
 	log.Printf("Received command to %s stars notifications", commandDetails.Command.String())
 	if commandDetails.Command == pb.NotificationCommand_START {
@@ -167,6 +178,7 @@ func (s *server) ManageStarsNotifications(ctx context.Context, commandDetails *p
 	return &pb.Empty{}, nil
 }
 
+//StartStarsNotification: envía actualizaciones de entrellas a rabbit con la frecuencia asignada.
 func StartStarsNotification(frequency int) {
 	var rabbitMQHOST string
 	if os.Getenv("RABBITMQ_HOST") == "" {
@@ -215,6 +227,7 @@ func StartStarsNotification(frequency int) {
 
 }
 
+//main: Carga las ofertas con loadOffers y luego inicializa el servidor gRPC
 func main() {
 		err := loadOffers("ofertas_grande.csv")
 
