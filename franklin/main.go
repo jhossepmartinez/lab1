@@ -173,6 +173,7 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 				log.Printf("Hit failed at turn %d due to 5 or more stars", turn)
 				phaseState.status = pb.PhaseStatus_FAILURE
 				phaseState.message = "Franklin: Too many stars! The cops arrived!"
+				phaseState.extraMoney = int32(extraMoney)
 				phaseState.current_stars = 0
 				phaseState.activateHability = false
 				phaseState.mu.Unlock()
