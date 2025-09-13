@@ -18,17 +18,17 @@ import (
 
 const checkIntervalDuration = 1 * time.Second
 
-//isOfferAcceptable: Checkea si una oferta cumple con los requerimientos de Michael.
+// isOfferAcceptable: Checkea si una oferta cumple con los requerimientos de Michael.
 func isOfferAcceptable(offer *pb.HeistOffer) bool {
 	return (offer.TrevorSuccess > 50 || offer.FranklinSuccess > 50) && offer.PoliceRisk < 80
 }
 
-//isOfferValid: Checkea si una oferta tiene todos los campos. La falta de campos es representada con un -1.
+// isOfferValid: Checkea si una oferta tiene todos los campos. La falta de campos es representada con un -1.
 func isOfferValid(offer *pb.HeistOffer) bool {
 	return (offer.Loot != -1 && offer.TrevorSuccess != -1 && offer.FranklinSuccess != -1 && offer.PoliceRisk != -1)
 }
 
-//negotiateOffer: Solicita ofertas a Lester hasta encontrar una oferta que cumpla con sus requerimientos.
+// negotiateOffer: Solicita ofertas a Lester hasta encontrar una oferta que cumpla con sus requerimientos.
 func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 	for {
 		offer, err := (*lc).ProposeHeistOffer(context.Background(), &pb.Empty{})
@@ -40,13 +40,13 @@ func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 			continue
 		}
 		log.Printf("Received offer: &{Loot: %d, PoliceRisk: %d, TrevorSuccess: %d, FranklinSuccess: %d}", offer.Loot, offer.PoliceRisk, offer.TrevorSuccess, offer.FranklinSuccess)
-		
-		if !isOfferValid(offer){
+
+		if !isOfferValid(offer) {
 			log.Println("Offer has missing fields, rejecting...")
 			(*lc).DecideOnOffer(context.Background(), &pb.Decision{Accepted: false})
 			continue
 		}
-		
+
 		if isOfferAcceptable(offer) {
 			log.Println("Offer is acceptable, accepting...")
 			(*lc).DecideOnOffer(context.Background(), &pb.Decision{Accepted: true})
@@ -59,8 +59,9 @@ func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 	}
 }
 
-//runDistraction: Asigna a Franklin o Trevor la fase de Distracción en base a sus probabilidades de exito
-//				  Luego procede a ejecutar la distracción desde su inicio hasta su finalización.
+// runDistraction: Asigna a Franklin o Trevor la fase de Distracción en base a sus probabilidades de exito
+//
+//	Luego procede a ejecutar la distracción desde su inicio hasta su finalización.
 func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) (*pb.PhaseStatus, string) {
 	var oc *pb.OperatorServiceClient
 	oc = trevorClient
@@ -89,8 +90,9 @@ func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offe
 	}
 }
 
-//runHit: Asigna la fase de  Golpe al personaje que no participó en la distracción. Luego se procede a
-//		  a ejecutar el golpe desde su inicio hasta su finalización.
+// runHit: Asigna la fase de  Golpe al personaje que no participó en la distracción. Luego se procede a
+//
+//	a ejecutar el golpe desde su inicio hasta su finalización.
 func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) (*pb.PhaseStatus, string) {
 	var oc *pb.OperatorServiceClient
 	oc = trevorClient
@@ -119,7 +121,7 @@ func runHit(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.He
 	}
 }
 
-//createReport: Se genera el archivo Reporte.txt con el resumen final de la misión.
+// createReport: Se genera el archivo Reporte.txt con el resumen final de la misión.
 func createReport(loot, extraMoney, totalLoot, franklinCut, trevorCut, lesterCut, remainder int32,
 	franklinResp, trevorResp, lesterResp string) {
 	file, err := os.Create("Reporte.txt")
@@ -161,7 +163,7 @@ func createReport(loot, extraMoney, totalLoot, franklinCut, trevorCut, lesterCut
 	log.Println("Reporte.txt creado exitosamente")
 }
 
-//createReportFailure: Se genera el archivo Reporte.txt al fallar la misión.
+// createReportFailure: Se genera el archivo Reporte.txt al fallar la misión.
 func createReportFailure(loot, extraMoney int32, responsable, causa, fase string) {
 	file, err := os.Create("Reporte.txt")
 	if err != nil {
@@ -196,8 +198,9 @@ func createReportFailure(loot, extraMoney int32, responsable, causa, fase string
 	log.Println("Reporte.txt creado exitosamente")
 }
 
-//manageLootSplit: Gestiona el reparto de botin, recibe confirmación de los otros 3 personajes y genera el 
-//				   reporte con la función createReport().
+// manageLootSplit: Gestiona el reparto de botin, recibe confirmación de los otros 3 personajes y genera el
+//
+//	reporte con la función createReport().
 func manageLootSplit(trevorClient, franklinClient *pb.OperatorServiceClient, lesterClient *pb.LesterServiceClient, ocName string) (int32, int32) {
 	var oc *pb.OperatorServiceClient
 	oc = trevorClient
@@ -255,7 +258,7 @@ func manageLootSplit(trevorClient, franklinClient *pb.OperatorServiceClient, les
 	return lootDetails.Loot, lootDetails.ExtraMoney
 }
 
-//main: Se realiza la conexión con los servicios y se ejecutan las fases del atraco.
+// main: Se realiza la conexión con los servicios y se ejecutan las fases del atraco.
 func main() {
 	localHost := "192.168.1.6"
 	lesterHost := os.Getenv("LESTER_HOST")
