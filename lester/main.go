@@ -229,7 +229,7 @@ func StartStarsNotification(frequency int) {
 
 //main: Carga las ofertas con loadOffers y luego inicializa el servidor gRPC
 func main() {
-		err := loadOffers("ofertas_grande.csv")
+	err := loadOffers("ofertas_grande.csv")
 
 	if err != nil {
     	log.Fatalf("Failed to load offers from CSV: %v", err)
