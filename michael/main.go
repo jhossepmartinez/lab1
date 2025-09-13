@@ -61,7 +61,7 @@ func negotiateOffer(lc *pb.LesterServiceClient) *pb.HeistOffer {
 
 //runDistraction: Asigna a Franklin o Trevor la fase de Distracción en base a sus probabilidades de exito
 //				  Luego procede a ejecutar la distracción desde su inicio hasta su finalización.
-func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) *pb.PhaseStatus {
+func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offer *pb.HeistOffer) (*pb.PhaseStatus, string) {
 	var oc *pb.OperatorServiceClient
 	oc = trevorClient
 	var ocName string = "Trevor"
@@ -84,7 +84,7 @@ func runDistraction(trevorClient, franklinClient *pb.OperatorServiceClient, offe
 		}
 		if status.Status != pb.PhaseStatus_IN_PROGESS {
 			log.Printf("Distraction finished with status: %v", status.Status)
-			return status
+			return status, ocName
 		}
 	}
 }
@@ -154,6 +154,41 @@ func createReport(loot, extraMoney, totalLoot, franklinCut, trevorCut, lesterCut
 	writer.WriteString(fmt.Sprintf("Respuesta de Lester : \"%s\"\n", lesterResp))
 	writer.WriteString("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
 	writer.WriteString(fmt.Sprintf("Saldo Final de la Operacion : %s\n", formatNumber(totalLoot)))
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+
+	writer.Flush()
+
+	log.Println("Reporte.txt creado exitosamente")
+}
+
+//createReportFailure: Se genera el archivo Reporte.txt al fallar la misión.
+func createReportFailure(loot, extraMoney int32, responsable, causa, fase string) {
+	file, err := os.Create("Reporte.txt")
+	if err != nil {
+		log.Fatal("Could not create report file: ", err)
+	}
+	defer file.Close()
+	var totalLoot int32 = loot + extraMoney
+	// Format numbers with commas for thousands
+	formatNumber := func(num int32) string {
+		return fmt.Sprintf("$%d,%03d", num/1000, num%1000)
+	}
+
+	// Write the report
+	writer := bufio.NewWriter(file)
+
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+	writer.WriteString("== REPORTE FINAL DE LA MISION ==\n")
+	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
+	writer.WriteString("Mision : Asalto al Banco # 7128\n")
+	writer.WriteString("Resultado Global : FRACASO ROTUNDO !\n")
+	writer.WriteString("--- PERDIDAS ---\n")
+	writer.WriteString(fmt.Sprintf("Fase : \"%s\"\n", fase))
+	writer.WriteString(fmt.Sprintf("Responsable : %s\n", responsable))
+	writer.WriteString(fmt.Sprintf("Causa : %s\n", causa))
+	writer.WriteString(fmt.Sprintf("Botin Perdido : %s\n", formatNumber(loot)))
+	writer.WriteString(fmt.Sprintf("Botin Extra Perdido ( Habilidad de Chop ): %s\n", formatNumber(extraMoney)))
+	writer.WriteString(fmt.Sprintf("Botin Total Perdido: %s\n", formatNumber(totalLoot)))
 	writer.WriteString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
 
 	writer.Flush()
@@ -263,9 +298,16 @@ func main() {
 	log.Printf("Accepted offer: &{Loot: %d, PoliceRisk: %d, TrevorSuccess: %d, FranklinSuccess: %d}", offer.Loot, offer.PoliceRisk, offer.TrevorSuccess, offer.FranklinSuccess)
 
 	log.Println("Coordinating: Phase 2, running the distraction with Franklin")
-	distractionStatus := runDistraction(&trevorClient, &franklinClient, offer)
+	distractionStatus, ocName := runDistraction(&trevorClient, &franklinClient, offer)
 	if distractionStatus.Status != pb.PhaseStatus_SUCCESS {
-		log.Printf("Coordinating: Phase 2, distraction failed, %s", distractionStatus.Message)
+		log.Printf("Coordinating: Phase 2, distraction failed, %s %s", distractionStatus.Message, ocName)
+		var causa string
+		if ocName == "Trevor" {
+			causa = "Trevor estaba borracho"
+		} else {
+			causa = "Chop ladró y distrajo a Franklin"
+		}
+		createReportFailure(offer.Loot, 0, ocName, causa, "Distracción")
 		return
 	}
 	log.Println("Coordinating: Phase 2, success")
@@ -281,6 +323,7 @@ func main() {
 		lesterClient.ManageStarsNotifications(context.Background(), &pb.NotificationCommand{
 			Command: pb.NotificationCommand_STOP,
 		})
+		createReportFailure(offer.Loot, hitStatus.ExtraMoney, ocName, "Se llegó al límite de estrellas", "Robo")
 		return
 	}
 	lesterClient.ManageStarsNotifications(context.Background(), &pb.NotificationCommand{
