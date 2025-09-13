@@ -18,20 +18,20 @@ franklin:
 trevor:
 	cd ./trevor/ && go run ./main.go
 
-rabbitmq-setup:
-	@echo "Stopping and removing existing RabbitMQ container..."
-	docker stop rabbitmq 2>/dev/null || true
-	docker rm rabbitmq 2>/dev/null || true
-	@echo "Starting RabbitMQ container..."
-	docker run -d --name rabbitmq -p 5673:5672 -p 15673:15672 rabbitmq:4-management
-	@echo "Waiting for RabbitMQ to start..."
-	sleep 10
-	@echo "Creating admin user..."
-	docker exec rabbitmq rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@$(docker exec rabbitmq hostname).pid
-	docker exec rabbitmq rabbitmqctl add_user admin admin
-	docker exec rabbitmq rabbitmqctl set_user_tags admin administrator
-	docker exec rabbitmq rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
-	@echo "RabbitMQ setup complete! Admin user: admin/admin"
+# rabbitmq-setup:
+# 	@echo "Stopping and removing existing RabbitMQ container..."
+# 	docker stop rabbitmq 2>/dev/null || true
+# 	docker rm rabbitmq 2>/dev/null || true
+# 	@echo "Starting RabbitMQ container..."
+# 	docker run -d --name rabbitmq -p 5673:5672 -p 15673:15672 rabbitmq:4-management
+# 	@echo "Waiting for RabbitMQ to start..."
+# 	sleep 10
+# 	@echo "Creating admin user..."
+# 	docker exec rabbitmq rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@$(docker exec rabbitmq hostname).pid
+# 	docker exec rabbitmq rabbitmqctl add_user admin admin
+# 	docker exec rabbitmq rabbitmqctl set_user_tags admin administrator
+# 	docker exec rabbitmq rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+# 	@echo "RabbitMQ setup complete! Admin user: admin/admin"
 
 docker-build:
 	sudo docker build -t lester -f ./lester/Dockerfile ./lester && \
