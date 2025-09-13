@@ -22,7 +22,7 @@ import (
 const (
 	rabbitMQURL  = "amqp://admin:admin@localhost:5672/"
 	queueName    = "stars_notification"
-	waitDuration = 5 * time.Second
+	waitDuration = 10 * time.Second
 	turnDuration = 10 * time.Millisecond
 )
 
