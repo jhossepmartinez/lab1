@@ -65,7 +65,7 @@ docker-run-franklin:
 
 docker-run-trevor:
 	sudo docker rm -f trevor-container 2>/dev/null || true
-	sudo docker run --name trevor-container -p 50053:50053 trevo
+	sudo docker run --name trevor-container -p 50053:50053 trevor
 
 docker-logs-lester:
 	sudo docker logs -f lester-container
