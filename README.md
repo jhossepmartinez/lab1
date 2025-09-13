@@ -8,9 +8,9 @@ Jhossep Martinez / 202173530-5
 - Ir a la VM dist13 y ejecutar ```make docker-run-lester```
 - Ir a la VM dist16 y ejecutar ```make docker-run-franklin```
 - Ir a la VM dist15 y ejecutar ```make docker-run-trevor```
+
+Finalmente, una vez las 3 entidades estean corriendo, iniciar la maquina de docker.
 - Ir a la VM dist14 y ejecutar ```make docker-run-michael```
-
-
 
 Credenciales VM:
 dist013
