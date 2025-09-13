@@ -5,6 +5,7 @@
 
 ## Consideraciones:
 - La maquina virtual de lester (dist013) tiene rabbitMQ corriendo por lo que no es necesario resetearlo
+- En el directorio de Lester se encuentra el archivo "ofertas_grandes.cvs", desde aquí se leen las ofertas y se ofrecen constantemente de forma aleatoria cada vez que michael solicita una. En caso de querer usar otro archivo este debe ir en el directorio de michael y debe cambiarse el nombre en el main de de lester.
 
 ## Instrucciones:
 - Ir a la VM dist13 y ejecutar ```make docker-run-lester```
