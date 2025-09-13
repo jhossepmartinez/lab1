@@ -35,9 +35,12 @@ var phaseState struct {
 	totalLoot        int32
 }
 
+//init: inicializa el estado de la fase
 func init() {
 	phaseState.status = pb.PhaseStatus_AWAITING_ORDERS
 }
+
+//ConfirmaCut: confirma la repartición del botín, revisando si el monto recibido es el correcto
 func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb.Ack, error) {
 	cut := cutDetails.ReceivedCut
 	total := cutDetails.Loot + cutDetails.ExtraMoeny
@@ -57,6 +60,7 @@ func (s *server) ConfirmCut(ctx context.Context, cutDetails *pb.CutDetails) (*pb
 	}, nil
 }
 
+//consumeStarNotifications: Recibe la actualización de estrellas con rabbitmq
 func consumeStarNotifications() {
 	var rabbitMQHOST string
 	if os.Getenv("RABBITMQ_HOST") == "" {
@@ -103,6 +107,7 @@ func consumeStarNotifications() {
 	}
 }
 
+//StartDistraction: inicia la distracción, teniendo un 10% de probabilidades de fallar a la mitad de los turnos.
 func (s *server) StartDistraction(ctx context.Context, details *pb.DistractionDetails) (*pb.Empty, error) {
 	log.Printf("Starting distraction, %d turns needed", details.TurnsNeeded)
 	go func() {
@@ -134,6 +139,7 @@ func (s *server) StartDistraction(ctx context.Context, details *pb.DistractionDe
 	return &pb.Empty{}, nil
 }
 
+//RetrieveLoot: se envian los detalles del botin a Michael.
 func (s *server) RetrieveLoot(ctx context.Context, empty *pb.Empty) (*pb.LootDetails, error) {
 	return &pb.LootDetails{
 		Loot:       phaseState.totalLoot - phaseState.extraMoney,
@@ -141,6 +147,8 @@ func (s *server) RetrieveLoot(ctx context.Context, empty *pb.Empty) (*pb.LootDet
 	}, nil
 }
 
+//StartHit: inicia el golpe, si las estrellas suben a 5 se activa la habilidad especial. Si se llega a
+//			7 estrellas o más, el golpe falla.
 func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empty, error) {
 	log.Printf("Starting hit, %d turns needed", details.TurnsNeeded)
 	loot := details.Loot
@@ -182,6 +190,7 @@ func (s *server) StartHit(ctx context.Context, details *pb.HitDetails) (*pb.Empt
 	return &pb.Empty{}, nil
 }
 
+//CheckDistractionStatus: devuelve el estado actual de la distracción.
 func (s *server) CheckDistractionStatus(ctx context.Context, details *pb.Empty) (*pb.PhaseStatus, error) {
 	phaseState.mu.Lock()
 	defer phaseState.mu.Unlock()
@@ -191,6 +200,7 @@ func (s *server) CheckDistractionStatus(ctx context.Context, details *pb.Empty) 
 	}, nil
 }
 
+//main: inicializa el servidor gRPC y queda a la espera de llamadas.
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	lis, err := net.Listen("tcp", ":50053")
